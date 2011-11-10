@@ -126,27 +126,29 @@ RDFauthor.registerWidget({
     }, 
 
     submit: function () {
+	   var myself = this;
         if (this.shouldProcessSubmit()) {
             // get databank
             var databank   = RDFauthor.databankForGraph(this.statement.graphURI());
             var hasChanged = (
-                this.statement.hasObject()
+                this.statement.hasObject() 
                 && this.statement.objectValue() !== this.value()
                 && null !== this.value()
             );
-
+            
             if (hasChanged || this.removeOnSubmit) {
                 var rdfqTriple = this.statement.asRdfQueryTriple();
                 if (rdfqTriple) {
-                    databank.remove(rdfqTriple);
+                    databank.remove(String(rdfqTriple));
                 }
             }
-
+            
+            
             if (!this.removeOnSubmit && this.value()) {
                 var self = this;
                 try {
                     var newStatement = this.statement.copyWithObject({
-                        value: '<' + this.value() + '>',
+                        value: '<' + this.value() + '>', 
                         type: 'uri'
                     });
                     databank.add(newStatement.asRdfQueryTriple());
@@ -156,10 +158,96 @@ RDFauthor.registerWidget({
                     return false;
                 }
             }
+            
+            /*UDFR - Abhi -Check for the input value is already a instance of its range class or not
+             * If not then create an instance of its range class.
+             */
+            var currentPred = myself.statement.predicateURI();
+            var inputValue = this.value();
+            if (String(inputValue).lastIndexOf('#') > -1) {
+            	var valueLabel = String(inputValue).substr(String(inputValue).lastIndexOf('#') + 1);
+            } else {
+            	var valueLabel = String(inputValue).substr(String(inputValue).lastIndexOf('/') + 1);
+            }
+            
+            var prologue = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
+                \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>';
+            var query = prologue + '\nSELECT ?isMemberof ?rangeclass\
+            WHERE { <'+currentPred+'> rdfs:range ?rangeclass . \
+            OPTIONAL { <'+inputValue+'> rdf:type ?isMemberof }\
+            }';
+            var hidden = this.statement.isHidden(); 
+            var ignored = this.statement.isIgnored(); 
+            var required = this.statement.isRequired(); 
+            var protected1 = this.statement.isProtected(); 
+            var graph = this.statement.graphURI();
+            //UDFR - Abhi - AJAX call for Sparql endpoint
+            RDFauthor.queryForRangeClass(graph, query, {
+            	callbackSuccess: function (data) {
+            		if (data && data['results'] && data['results']['bindings']) {
+                        var bindings  = data['results']['bindings'];
+                        var keyCount = 0;
+                        var rangeclass = bindings[0].rangeclass.value;
+                       
+                        for(key in bindings[0])
+                        	{
+                        		keyCount = keyCount+1;
+                        	}
+                        //alert(keyCount);
+                        if (keyCount==1) {
+                        	//alert("Create New Instance");
+                        	try {
+                            	var objectOptions1 = {};
+                            	objectOptions1.type='uri';
+                            	objectOptions1.value = '<' +rangeclass+ '>';
+                            	var createNewInstance1 = new Statement({
+                                    subject: '<' + inputValue + '>', 
+                                    predicate: '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', 
+                                    object: objectOptions1
+                                }, {
+                                    hidden: hidden, 
+                                    ignored: ignored, 
+                                    required: required, 
+                                    protected: protected1, 
+                                    graph: graph
+                                });
+                            	
+                            	var options = {};
+                            	options.datatype = 'http://www.w3.org/2001/XMLSchema#string'; 
+                            	var objectSpecs = {};
+                            	objectSpecs.options = options;
+                            	objectSpecs.type = 'literal';
+                            	objectSpecs.value = valueLabel;
+                            	var createNewInstance2 = new Statement({
+                                    subject: '<' + inputValue + '>', 
+                                    predicate: '<http://www.w3.org/2000/01/rdf-schema#label>', 
+                                    object: objectSpecs
+                                }, {
+                                	hidden: hidden, 
+                                    ignored: ignored, 
+                                    required: required, 
+                                    protected: protected1, 
+                                    graph: graph
+                                });
+                                databank.add(createNewInstance1.asRdfQueryTriple());
+                            	databank.add(createNewInstance2.asRdfQueryTriple());
+                            	
+                            } catch (e) {
+                                var msg = e.message ? e.message : e;
+                                alert('Could not save resource for the following reason: \n' + msg);
+                                return false;
+                            }
+                            
+                        }
+                        
+            		}
+            	}
+            });
+           
         }
-
+   
         return true;
-    },
+    }, 
 
     shouldProcessSubmit: function () {
         var t1 = !this.statement.hasObject();
