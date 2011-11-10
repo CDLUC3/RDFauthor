@@ -1371,7 +1371,7 @@ RDFauthor = (function($, undefined) {
                         widgetConstructor = _registeredWidgets[OBJECT_HOOK][''];
                     }
                 } else {
-                    widgetConstructor = _registeredWidgets[DEFAULT_HOOK][''];
+                    widgetConstructor = _registeredWidgets[OBJECT_HOOK]['']; //UDFR - Abhi- by default it is object hook instead of DEFAULT_HOOK
                 }
             }
             
