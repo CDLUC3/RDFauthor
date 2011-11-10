@@ -121,6 +121,8 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
         }, {
             graph: statement.graphURI()
         });
+		
+		// UDFR - Abhi - Cardinality task line#126 to 151 
     	var currentPred = self._predicateURI;
     	var propTypeQuery = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
             \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
