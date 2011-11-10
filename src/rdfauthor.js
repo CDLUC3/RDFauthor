@@ -1171,6 +1171,7 @@ RDFauthor = (function($, undefined) {
         cancel: function () {
             var self = this;
             var view = RDFauthor.getView();
+            $('.valueSelector').hide(); // UDFR - Abhi - hide the popup box of add value task
             view.hide(true, function () {
                 /* clean up */
                 _resetDatabanks();
@@ -1341,7 +1342,9 @@ RDFauthor = (function($, undefined) {
             // try property axioms (property type, property range)
             if (null === widgetConstructor) {
                 if (($.inArray(OWL_NS + 'DatatypeProperty', types) >= 0) 
-                    || ($.inArray(RDFS_NS + 'Literal', ranges) >= 0)) {
+                    || ($.inArray(RDFS_NS + 'Literal', ranges) >= 0) 
+                    || predicateURI == RDFS_NS + 'label'
+                ) {
                     
                     widgetConstructor = _registeredWidgets[LITERAL_HOOK][''];
                 } else if (
@@ -1371,7 +1374,7 @@ RDFauthor = (function($, undefined) {
                         widgetConstructor = _registeredWidgets[OBJECT_HOOK][''];
                     }
                 } else {
-                    widgetConstructor = _registeredWidgets[DEFAULT_HOOK][''];
+                    widgetConstructor = _registeredWidgets[OBJECT_HOOK][''];	// UDFR - Abhi
                 }
             }
             

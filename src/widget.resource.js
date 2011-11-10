@@ -100,16 +100,27 @@ RDFauthor.registerWidget({
         return jQuery('#resource-input-' + this.ID);
     },
 
-    markup: function () {
+    markup: function (widgetID, predValDiv) {
         var l = this.statement.objectLabel();
         var value = this.statement.objectLabel()
                   ? this.statement.objectLabel()
                   : (this.statement.hasObject() ? this.statement.objectValue() : '');
+        
+        // UDFR - Abhi - Do not display "Add Value" button if predicate value is type
+        var predicateValue = this.statement.predicateURI();
+        if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
+        	var buttonMarkup = '\
+        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Values</a>';
+        	}
+        else {
+        	var buttonMarkup = '';
+        }          
+        
         var markup = '\
             <div class="container resource-value">\
                 <input type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \
-                       value="' + value + '"/>\
-            </div>';
+                       value="'+value+'"/>\
+                       ' + buttonMarkup + '</div>';
 
         return markup;
     },

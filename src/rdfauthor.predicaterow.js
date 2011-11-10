@@ -60,7 +60,9 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
             <div class="rdfauthor-predicate-row" id="' + self.cssID() + '">\
                 <fieldset>' + getLegend() + '</fieldset>\
             </div>';
-
+        // UDFR - Abhi - Added a popup for add values task
+        $('body').append('<div class="valueSelector" id="predvaldiv-' + self.cssID() + '"></div>');
+        
         return html;
     }
 
@@ -152,7 +154,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
         widgetInstance.predicateRow = this;
 
         var widgetID   = RDFauthor.nextID();
-        var widgetHTML = getWidgetChrome(widgetID, widgetInstance.markup());
+        var widgetHTML = getWidgetChrome(widgetID, widgetInstance.markup(widgetID,self.cssID()));
         var widgetIdx  = nextWidgetIndex();
 
         // store widget-id widgetIdx mapping
@@ -167,6 +169,61 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
         // append HTML
         jQuery('#' + this._idPrefix + this._id).children('fieldset').append(widgetHTML);
 
+        
+        // UDFR - Abhi - Add Value button click event
+        jQuery('#addvalue-'+widgetID).click(function () {
+        	var currentID = self.cssID();
+            //var abhitiltle = self._title;
+            var currentPred = self._predicateURI;
+            var imgUrl = RDFAUTHOR_BASE+'img/spinner.gif';
+            $('#predvaldiv-' + currentID).empty();
+            $('#predvaldiv-' + currentID).append('<a style="position:relative; left:210px; cursor:pointer;" onclick=document.getElementById("predvaldiv-'+currentID+'").style.display="none";><img title="Close" alt="Close" src="'+RDFAUTHOR_BASE+'img/icon-cancel.png" /></a>');
+            $('#predvaldiv-' + currentID).css("background-image","url("+imgUrl+")");
+           	$('.valueSelector').hide();
+        	var query1 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
+                   \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+        		\nSELECT  ?valuelabel ?val\
+        		\nWHERE { <'+currentPred+'> rdfs:range ?rangeclass .\
+        		\n?val a ?rangeclass .\
+        		\n?val rdfs:label ?valuelabel . }'
+        	
+               RDFauthor.queryGraph(statement.graphURI(), query1, {
+               	callbackSuccess: function (data) {
+               		$('#predvaldiv-' + currentID).css("cursor","auto");
+               		$('#predvaldiv-' + currentID).css("background-image","none");
+               		
+               		//var sparqlResults = [];
+                       if (data && data['results'] && data['results']['bindings']) {
+                           var bindings  = data['results']['bindings'];
+                           var resources = {};
+                           var color = "#F0F0F0";
+                           var max = bindings.length; 
+                           if (max > 0) {
+                           	for (var i = 0; i < max; i++) {
+                               	if(i%2) color = "#F8F8F8";
+                               	else color = "#F0F0F0";
+                               	var currentValueLabel = bindings[i].valuelabel.value;
+                                   var currentValueUri = bindings[i].val.value;
+                                   $('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;'+currentValueLabel+'</li>');
+                               }
+                           } else {
+                           	$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; text-decoration:none;" onclick=document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;No Result Found..</li>');
+                           }
+                        }
+                }
+               });
+        		
+        		//$('#predvaldiv-' + self.cssID()).append('<option style="color:#909090;" selected="selected" value="">Select a Value</option>');
+        		if ($('#predvaldiv-' + self.cssID()).length > 0) {
+        			//$('#predvaldiv-' + currentID).append('<li style="position:static; color:white; display:block; background-color:#909090; "><b>Select a value<span style="color:#800000; float:right;">[x]</span></b></li>');
+        			//var windowPosition = $('#rdfauthor-view').position(); //left: 343.5px; top: 2.5px;
+            		$('#predvaldiv-' + self.cssID()).show();
+            		$('#predvaldiv-' + self.cssID()).css("top", 200);//("top", windowPosition.top+200);
+            		$('#predvaldiv-' + self.cssID()).css("left", 523);//("left", windowPosition.left+170);
+            		
+        		}
+        }); 	
+        
         // widget markup ready
         widgetInstance.ready();
 
