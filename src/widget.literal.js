@@ -220,8 +220,6 @@ RDFauthor.registerWidget({
             <div class="container literal-type util ' + this.disclosureID + '" style="display:none">\
                 <label><input type="radio" class="radio" name="literal-type-' + this.ID + '"'
                         + (this.statement.objectDatatype() ? '' : ' checked="checked"') + ' value="plain" />Plain</label>\
-                <label><input type="radio" class="radio" name="literal-type-' + this.ID + '"'
-                        + (this.statement.objectDatatype() ? ' checked="checked"' : '') + ' value="typed" />Typed</label>\
             </div>\
             <div class="container util ' + this.disclosureID + '" style="display:none">\
                 <div class="literal-lang"' + (this.statement.objectDatatype() ? ' style="display:none"' : '') + '>\
@@ -241,6 +239,12 @@ RDFauthor.registerWidget({
             </div>';
 
         return markup;
+        /*   UDFR - Abhi - remove the functionality to define datatype for any literal input 
+         * If this feature needed place below lines after <label><input ........ value="plain"
+         *     <label><input type="radio" class="radio" name="literal-type-' + this.ID + '"'
+                        + (this.statement.objectDatatype() ? ' checked="checked"' : '') + ' value="typed" />Typed</label>\
+            
+         */
     },
 
     submit: function () {
