@@ -113,17 +113,43 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
     });
 
     jQuery('#' + this.cssID() + ' .actions .add-button').live('click', function () {
-        var widgetID = $(this).closest('.widget').attr('id');
+    	var widgetID = $(this).closest('.widget').attr('id');
         var widget   = self.getWidgetForID(widgetID);
-
         var statement    = widget.statement;
         var newStatement = new Statement({
-            subject: '<' + statement.subjectURI() + '>',
+            subject: '<' + statement.subjectURI() + '>', 
             predicate: '<' + statement.predicateURI() + '>'
         }, {
             graph: statement.graphURI()
         });
-        self.addWidget(newStatement, widget.constructor, true);
+        
+        //UDFR - ABHI - Cardinality check
+    	var currentPred = self._predicateURI;
+    	var propTypeQuery = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
+            \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+ 		\nSELECT  ?propType\
+ 		\nWHERE { <'+currentPred+'> rdf:type ?propType . }'
+ 	
+        RDFauthor.queryGraph(statement.graphURI(), propTypeQuery, {
+        	callbackSuccess: function (data) {
+        		if (data && data['results'] && data['results']['bindings']) {
+                    var bindings  = data['results']['bindings'];
+                    var test;
+                    var flag = true;
+                    for (var i = 0, max = bindings.length; i < max; i++) {
+                    	test = bindings[i].propType.value;
+                    	if(test=="http://www.w3.org/2002/07/owl#FunctionalProperty"){
+                    		alert("Cardinality doesnot allow add more values");
+                    		flag = false;
+                    	}
+                    }
+                    if (flag){
+                    	self.addWidget(newStatement, widget.constructor, true);
+                    }
+                 }
+         }
+        });
+    	
     });
 
     var target = RDFauthor.eventTarget();
