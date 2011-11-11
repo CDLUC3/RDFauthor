@@ -106,19 +106,24 @@ RDFauthor.registerWidget({
                   ? this.statement.objectLabel()
                   : (this.statement.hasObject() ? this.statement.objectValue() : '');
         
-        // UDFR - Abhi - Do not display "Add Value" button if predicate value is type
+        /* UDFR - Abhi - if predicate value is rdf:type
+         * Then Do not display "Add Value" button
+         * And Input box will be disabled
+         */
         var predicateValue = this.statement.predicateURI();
         if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
         	var buttonMarkup = '\
         		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Values</a>';
-        	}
+        	var disabled = '';
+        }
         else {
         	var buttonMarkup = '';
+        	var disabled = 'disabled';
         }          
         
         var markup = '\
             <div class="container resource-value">\
-                <input type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \
+                <input ' + disabled + ' type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \
                        value="'+value+'"/>\
                        ' + buttonMarkup + '</div>';
 
