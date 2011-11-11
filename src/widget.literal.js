@@ -229,13 +229,6 @@ RDFauthor.registerWidget({
                         </select>\
                     </label>\
                 </div>\
-                <div class="literal-datatype"' + (this.statement.objectDatatype() ? '' : ' style="display:none"') + '>\
-                    <label>Datatype:\
-                        <select id="literal-datatype-' + this.ID + '" name="literal-datatype-' + this.ID + '">\
-                            ' + this.makeOptionString(this.datatypes, this.statement.objectDatatype(), true) + '\
-                        </select>\
-                    </label>\
-                </div>\
             </div>';
 
         return markup;
@@ -243,7 +236,14 @@ RDFauthor.registerWidget({
          * If this feature needed place below lines after <label><input ........ value="plain"
          *     <label><input type="radio" class="radio" name="literal-type-' + this.ID + '"'
                         + (this.statement.objectDatatype() ? ' checked="checked"' : '') + ' value="typed" />Typed</label>\
-            
+         * Hide it completely...
+                <div class="literal-datatype"' + (this.statement.objectDatatype() ? '' : ' style="display:none"') + '>\
+                    <label>Datatype:\
+                        <select id="literal-datatype-' + this.ID + '" name="literal-datatype-' + this.ID + '">\
+                            ' + this.makeOptionString(this.datatypes, this.statement.objectDatatype(), true) + '\
+                        </select>\
+                    </label>\
+                </div>\   
          */
     },
 
