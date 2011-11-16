@@ -491,7 +491,6 @@
  * @version 1.0
  * @requires jquery.uri.js
  */
-
 (function ($) {
 
   var strip = function (value) {
