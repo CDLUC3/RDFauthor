@@ -1575,6 +1575,75 @@ RDFauthor = (function($, undefined) {
             $.ajax(ajaxOptions);
         },
         
+		/** UDFR - Abhi
+         * Sends a SPARQL query to the endpoint for graph denoted by graphURI
+         * Difference between queryGraph and queryForRangeClass is async:false, and timeout increased
+         */
+        queryForRangeClass: function (graphURI, query, options) {
+            var defaults = {
+                callbackSuccess: null, 
+                callbackError: null, 
+                async: false, 
+                sparqlEndpoint: null 
+            };
+            var o = $.extend(defaults, options);
+            
+            var serviceURI = o.sparqlEndpoint ? o.sparqlEndpoint : this.serviceURIForGraph(graphURI);
+            if (undefined === serviceURI) {
+                throw 'Graph has no SPARQL endpoint defined.';
+            }
+            
+            /* Request parameters */
+            var parameters = {
+                query: query, 
+                'default-graph-uri': graphURI
+            }
+            
+            /* Default ajax options (JSON) */
+            var ajaxOptions = {
+                timeout: 5000, 
+                dataType: 'json', 
+                url: serviceURI, 
+                data: parameters, 
+                async: o.async, 
+                /* request application/sparql-results+json */
+                beforeSend: function (XMLHTTPRequest) {
+                    XMLHTTPRequest.setRequestHeader('Accept', 'application/sparql-results+json');
+                }
+            };
+            
+            /* Success callback */
+            if (typeof o.callbackSuccess == 'function') {
+                ajaxOptions.success = function (data, status) {o.callbackSuccess(data);}
+            }
+            
+            /* Error callback */
+            if (typeof o.callbackError == 'function') {
+                ajaxOptions.error = function (request, status, error) {o.callbackError(status, error);}
+            }
+            
+            var serviceLocation = _parseURL(serviceURI);
+            var currentLocation = window.location;
+            
+            /* 
+             * Check whether JSONp is necessary 
+             * http://en.wikipedia.org/wiki/Same_origin_policy#Origin_determination_rules
+             */
+            if (!(currentLocation.protocol.replace(':', '') === serviceLocation.protocol && 
+                currentLocation.hostname === serviceLocation.hostname /*&&
+                currentLocation.port     === serviceLocation.port*/)) {
+                
+                /* not same origin, use JSONp and modify ajax options accordingly */
+                var JSONpOptions = {
+                    dataType: 'jsonp',
+                    callbackParameter: 'callback'
+                }
+                $.extend(ajaxOptions, JSONpOptions);
+            }
+            
+            $.ajax(ajaxOptions);
+        },
+        
         /**
          * Registers a predicate to automatically be queried for all predicates.
          * Widgets will be provided with values of these predicates on request.
