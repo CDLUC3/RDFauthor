@@ -211,7 +211,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
         		\nSELECT  ?valuelabel ?val\
         		\nWHERE { <'+currentPred+'> rdfs:range ?rangeclass .\
         		\n?val a ?rangeclass .\
-        		\n?val rdfs:label ?valuelabel . }'
+        		\n?val rdfs:label ?valuelabel . } ORDER BY ASC(?valuelabel)'
         	
                RDFauthor.queryGraph(statement.graphURI(), query1, {
                	callbackSuccess: function (data) {
