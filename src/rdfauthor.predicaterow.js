@@ -245,10 +245,12 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
                            	for (var i = 0; i < max; i++) {
                                	if(i%2) color = "#F8F8F8";
                                	else color = "#F0F0F0";
-                               	var currentValueLabel = bindings[i].valuelabel.value;
-                                   var currentValueUri = bindings[i].val.value;
-                                   $('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;'+currentValueLabel+'</li>');
-                               }
+								if (undefined !== bindings[i].valuelabel) {
+									var currentValueLabel = bindings[i].valuelabel.value;
+									var currentValueUri = bindings[i].val.value;
+									$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;'+currentValueLabel+'</li>');
+                                }
+							}
                            } else {
                            	$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; text-decoration:none;" onclick=document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;No Result Found..</li>');
                            }
