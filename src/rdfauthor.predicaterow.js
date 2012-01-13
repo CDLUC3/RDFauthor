@@ -207,27 +207,27 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
             $('#predvaldiv-' + currentID).css("background-image","url("+imgUrl+")");
            	$('.valueSelector').hide();
         	var query1 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-							\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
-							\nPREFIX udfrs: <http://www.udfr.org/onto/>\
-							\nSELECT DISTINCT ?valuelabel ?val\
-							\nWHERE { { <'+currentPred+'> rdfs:range ?rangeclass .\
-							\nOPTIONAL { ?val rdf:type ?rangeclass .\
-							\n?val rdfs:label ?valuelabel . } }\
-							\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
-							\n?sub rdfs:subClassOf ?rangeclass .\
-							\nOPTIONAL { ?val rdf:type ?sub .\
-							\n?val rdfs:label ?valuelabel . } }\
-							\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
-							\n?sub rdfs:subClassOf ?rangeclass .\
-							\n?s2 rdfs:subClassOf ?sub .\
-							\nOPTIONAL { ?val rdf:type ?s2 .\
-							\n?val rdfs:label ?valuelabel . } }\
-							\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
-							\n?sub rdfs:subClassOf ?rangeclass .\
-							\n?s2 rdfs:subClassOf ?sub .\
-							\n?s3 rdfs:subClassOf ?s2 .\
-							\nOPTIONAL { ?val rdf:type ?s3 .\
-							\n?val rdfs:label ?valuelabel . } } } ORDER BY ASC(?valuelabel)'
+\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+\nPREFIX udfrs: <http://www.udfr.org/onto/>\
+\nSELECT DISTINCT ?valuelabel ?val\
+\nWHERE { { <'+currentPred+'> rdfs:range ?rangeclass .\
+\nOPTIONAL { ?val rdf:type ?rangeclass .\
+\n?val rdfs:label ?valuelabel . } }\
+\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+\n?sub rdfs:subClassOf ?rangeclass .\
+\nOPTIONAL { ?val rdf:type ?sub .\
+\n?val rdfs:label ?valuelabel . } }\
+\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+\n?sub rdfs:subClassOf ?rangeclass .\
+\n?s2 rdfs:subClassOf ?sub .\
+\nOPTIONAL { ?val rdf:type ?s2 .\
+\n?val rdfs:label ?valuelabel . } }\
+\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+\n?sub rdfs:subClassOf ?rangeclass .\
+\n?s2 rdfs:subClassOf ?sub .\
+\n?s3 rdfs:subClassOf ?s2 .\
+\nOPTIONAL { ?val rdf:type ?s3 .\
+\n?val rdfs:label ?valuelabel . } } } ORDER BY ASC(?valuelabel)'
 
         	
                RDFauthor.queryGraph(statement.graphURI(), query1, {
@@ -249,7 +249,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 									var currentValueLabel = bindings[i].valuelabel.value;
 									var currentValueUri = bindings[i].val.value;
 									$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;'+currentValueLabel+'</li>');
-                                }
+								}
 							}
                            } else {
                            	$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; text-decoration:none;" onclick=document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;No Result Found..</li>');
@@ -290,6 +290,12 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false;
 			}
+			if((currentValue.match("http://www.udfr.org/udfr/u1")) || (currentValue.match("http://www.udfr.org/onto/"))) {
+				alert("\t Could not Create value. \nReason : Value already exist. ");
+				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
+				return false;
+			}
+			
 			var query2 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
                    \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
         		\nSELECT  ?rangeclass\
@@ -345,7 +351,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 							}, 'json');
 			jQuery('#' + 'resource-input-'+newId).css("background-image", "none");
 			jQuery('#' + 'resource-input-'+newId).val(graphUri+noid); 
-			jQuery('#' + 'resource-input-'+newId).attr("readonly", "readonly");
+			//jQuery('#' + 'resource-input-'+newId).attr("readonly", "readonly");
 			
         });    
         // widget markup ready
