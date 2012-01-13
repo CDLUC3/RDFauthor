@@ -74,7 +74,7 @@ RDFauthor.registerWidget({
         }
 
         var self = this;
-        if (undefined === jQuery.ui.autocomplete) {
+        /*if (undefined === jQuery.ui.autocomplete) {
             RDFauthor.loadScript(RDFAUTHOR_BASE + 'libraries/jquery.ui.autocomplete.js', function () {
                 self._pluginLoaded = true;
                 self._initAutocomplete();
@@ -82,10 +82,10 @@ RDFauthor.registerWidget({
         } else {
             self._pluginLoaded = true;
             self._initAutocomplete();
-        }
+        }*/ // UDFR - ABHI - Close down Auto complete
 
         // jQuery UI styles
-        RDFauthor.loadStylesheet(RDFAUTHOR_BASE + 'libraries/jquery.ui.autocomplete.css');
+        //RDFauthor.loadStylesheet(RDFAUTHOR_BASE + 'libraries/jquery.ui.autocomplete.css');  //UDFR - ABHI - No need of Auto generated URI
 
         // load stylesheets
         RDFauthor.loadStylesheet(RDFAUTHOR_BASE + 'src/widget.resource.css');
@@ -93,7 +93,7 @@ RDFauthor.registerWidget({
 
     ready: function () {
         this._domReady = true;
-        this._initAutocomplete();
+        //this._initAutocomplete();
     },
 
     element: function () {
@@ -111,14 +111,18 @@ RDFauthor.registerWidget({
          * And Input box will be disabled
          */
         var predicateValue = this.statement.predicateURI();
-        if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
-        	var buttonMarkup = '\
-        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Values</a>';
+		var buttonMarkup1 = '\
+        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Value</a>';
+		var graph = this.statement.graphURI();
+        if (graph != "http://localhost/OntoWiki/Config/" || graph != "http://www.udfr.org/profile/") {
+        	
+			var buttonMarkup2 = '\
+        		<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Save Value</a>';
         	var readonly = '';
         	var color = '';
         }
         else {
-        	var buttonMarkup = '';
+			var buttonMarkup2 = '';
         	var readonly = 'readonly';
         	var color = ' style="color: #707070;"'
         }          
@@ -127,7 +131,7 @@ RDFauthor.registerWidget({
             <div class="container resource-value">\
                 <input ' + readonly + color + ' type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \
                        value="'+value+'"/>\
-                       ' + buttonMarkup + '</div>';
+                       ' + buttonMarkup1 + buttonMarkup2 + '</div>';
 
         return markup;
     },
@@ -167,13 +171,17 @@ RDFauthor.registerWidget({
             
             /*UDFR - Abhi -Check for the input value is already a instance of its range class or not
              * If not then create an instance of its range class.
-             */
+             
+			var graph = this.statement.graphURI();
+			if (graph != 'http://localhost/OntoWiki/Config/') {
             var currentPred = myself.statement.predicateURI();
             var inputValue = this.value();
             if (String(inputValue).lastIndexOf('#') > -1) {
             	var valueLabel = String(inputValue).substr(String(inputValue).lastIndexOf('#') + 1);
+				var baseUri = String(inputValue).substr(0, String(inputValue).lastIndexOf('#') + 1);
             } else {
             	var valueLabel = String(inputValue).substr(String(inputValue).lastIndexOf('/') + 1);
+				var baseUri = String(inputValue).substr(0, String(inputValue).lastIndexOf('/') + 1);
             }
             
             var prologue = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
@@ -182,14 +190,11 @@ RDFauthor.registerWidget({
             WHERE { <'+currentPred+'> rdfs:range ?rangeclass . \
             OPTIONAL { <'+inputValue+'> rdf:type ?isMemberof }\
             }';
-            var hidden = this.statement.isHidden(); 
-            var ignored = this.statement.isIgnored(); 
-            var required = this.statement.isRequired(); 
-            var protected1 = this.statement.isProtected(); 
-            var graph = this.statement.graphURI();
+            
+            
             
             //UDFR - Abhi - AJAX call for Sparql endpoint
-            RDFauthor.queryForRangeClass(graph, query, {
+            /*RDFauthor.queryForRangeClass(graph, query, {
             	callbackSuccess: function (data) {
             		if (data && data['results'] && data['results']['bindings']) {
                         var bindings  = data['results']['bindings'];
@@ -202,13 +207,22 @@ RDFauthor.registerWidget({
                         	}
                         //alert(keyCount);
                         if (keyCount==1) {
-                        	//alert("Create New Instance");
-                        	try {
+							/*jQuery.ajax({
+									timeout: 5000,
+									async: false,
+									dataType: 'html',
+									url: 'http://udfr-dev.cdlib.org:8089/noid/test',
+									success: function (data) {
+										//if (data) {
+													var noid = data.replace(/^\s+|\s+$/g, '');
+													//alert('<' + baseUri + noid + '>');
+							*//*
+							try {
                             	var objectOptions1 = {};
                             	objectOptions1.type='uri';
                             	objectOptions1.value = '<' +rangeclass+ '>';
                             	var createNewInstance1 = new Statement({
-                                    subject: '<' + inputValue + '>', 
+                                    subject: '<' + graph +'noid/'+ valueLabel + '>', 
                                     predicate: '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', 
                                     object: objectOptions1
                                 }, {
@@ -226,7 +240,7 @@ RDFauthor.registerWidget({
                             	objectSpecs.type = 'literal';
                             	objectSpecs.value = valueLabel;
                             	var createNewInstance2 = new Statement({
-                                    subject: '<' + inputValue + '>', 
+                                    subject: '<' + graph +'noid/'+ valueLabel + '>', 
                                     predicate: '<http://www.w3.org/2000/01/rdf-schema#label>', 
                                     object: objectSpecs
                                 }, {
@@ -244,16 +258,13 @@ RDFauthor.registerWidget({
                                 alert('Could not save resource for the following reason: \n' + msg);
                                 return false;
                             }
-                            
-                        }
-                        
-            		}
-            	}
-            });
-        }
-
-        return true;
-    },
+						}
+					}
+		    	}
+            });*/
+		}
+		return true;
+},
 
     shouldProcessSubmit: function () {
         var t1 = !this.statement.hasObject();
@@ -553,7 +564,7 @@ RDFauthor.registerWidget({
                     self.searchTerm = request.term;
 
                     // search
-                    self.performSearch(request.term, response);
+                    //self.performSearch(request.term, response);  //UDFR - ABHI - close down the Auto Generated Uri Feature
                 },
                 select: function (event, ui) {
                     self.selectedResource      = ui.item.value;

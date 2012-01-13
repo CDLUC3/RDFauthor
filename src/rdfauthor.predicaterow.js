@@ -207,11 +207,28 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
             $('#predvaldiv-' + currentID).css("background-image","url("+imgUrl+")");
            	$('.valueSelector').hide();
         	var query1 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-                   \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
-        		\nSELECT  ?valuelabel ?val\
-        		\nWHERE { <'+currentPred+'> rdfs:range ?rangeclass .\
-        		\n?val a ?rangeclass .\
-        		\n?val rdfs:label ?valuelabel . } ORDER BY ASC(?valuelabel)'
+							\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+							\nPREFIX udfrs: <http://www.udfr.org/onto/>\
+							\nSELECT DISTINCT ?valuelabel ?val\
+							\nWHERE { { <'+currentPred+'> rdfs:range ?rangeclass .\
+							\nOPTIONAL { ?val rdf:type ?rangeclass .\
+							\n?val rdfs:label ?valuelabel . } }\
+							\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+							\n?sub rdfs:subClassOf ?rangeclass .\
+							\nOPTIONAL { ?val rdf:type ?sub .\
+							\n?val rdfs:label ?valuelabel . } }\
+							\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+							\n?sub rdfs:subClassOf ?rangeclass .\
+							\n?s2 rdfs:subClassOf ?sub .\
+							\nOPTIONAL { ?val rdf:type ?s2 .\
+							\n?val rdfs:label ?valuelabel . } }\
+							\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+							\n?sub rdfs:subClassOf ?rangeclass .\
+							\n?s2 rdfs:subClassOf ?sub .\
+							\n?s3 rdfs:subClassOf ?s2 .\
+							\nOPTIONAL { ?val rdf:type ?s3 .\
+							\n?val rdfs:label ?valuelabel . } } } ORDER BY ASC(?valuelabel)'
+
         	
                RDFauthor.queryGraph(statement.graphURI(), query1, {
                	callbackSuccess: function (data) {
@@ -249,7 +266,86 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
             		
         		}
         }); 	
-        
+		
+		// UDFR - Abhi - Save Value button click event
+        jQuery('#savevalue-'+widgetID).click(function () {
+			var currentID = self.cssID();
+			var graphUri = statement.graphURI();
+            var currentPred = self._predicateURI;
+			var baseUrl = String(RDFAUTHOR_BASE).substr(0, String(RDFAUTHOR_BASE).lastIndexOf('/') - 19);
+			var noidUrl = baseUrl + "noid/";
+			var updateURI = RDFauthor.updateURIForGraph(graphUri);
+			var noid = "noid";
+			var rangeClass = "range";
+			var newId = widgetID-1;
+			var imgUrl = RDFAUTHOR_BASE+'img/spinner.gif';
+			jQuery('#' + 'resource-input-'+newId).css("background-image", "url("+imgUrl+")");
+			jQuery('#' + 'resource-input-'+newId).css("background-repeat", "no-repeat");
+			jQuery('#' + 'resource-input-'+newId).css("background-position", "right");
+			var currentValue = jQuery('#' +'resource-input-'+newId).val();
+			if (currentValue == "") {
+				alert ("Please enter a value");
+				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
+				return false;
+			}
+			var query2 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
+                   \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+        		\nSELECT  ?rangeclass\
+        		\nWHERE { <'+currentPred+'> rdfs:range ?rangeclass }';
+			// get the range class of property
+			RDFauthor.queryForRangeClass(graphUri, query2, {
+               	callbackSuccess: function (data) {
+					if (data && data['results'] && data['results']['bindings']) {
+                        var bindings  = data['results']['bindings'];
+						rangeClass = bindings[0].rangeclass.value;
+						//alert(rangeClass);
+					}
+				} 
+			});
+			var rangeClassLabel = String(rangeClass).substr(String(rangeClass).lastIndexOf('/') + 1);
+			var checkRangeClass = String(rangeClassLabel).substr(0, 8);
+			if (checkRangeClass == "Abstract") {
+			
+				alert ("\tYou can not create an instance of its range class. \n Reason: Because its range class is an abstract class. ");
+				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
+				return false;
+			}
+			if ( rangeClass == "http://www.udfr.org/onto/FileFormat" || rangeClass == "http://www.udfr.org/onto/Encoding" || rangeClass == "http://www.udfr.org/onto/Compression" ) {
+				noidUrl = noidUrl + "u1fother";
+			} else noidUrl = noidUrl + "u1rother";
+			
+			// get noid identifier
+			jQuery.ajax({
+						timeout: 5000,
+						async: false,
+						dataType: 'html',
+						url: noidUrl,
+						success: function (data) {
+										noid = data.replace(/^\s+|\s+$/g, '');
+								}
+			});
+			var noidCheck = String(noid).substr(0, 2);
+			if (noid == "noid" || noidCheck != "u1") { 
+				alert ("\t Could not save value. \nReason : Failed to get noid identifier"); 
+				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
+				return false; 
+			}
+			
+			var addedJSON = '{"'+graphUri+noid+'":{"http://www.w3.org/1999/02/22-rdf-syntax-ns#type":[{"type":"uri","value":"'+rangeClass+'"}],"http://www.w3.org/2000/01/rdf-schema#label":[{"type":"literal","value":"'+currentValue+'"}],"http://www.udfr.org/onto/udfrIdentifier":[{"type":"literal","value":"'+noid+'"}]}}';
+			// call update endpoint to save triples
+			$.post(updateURI, {
+                            'named-graph-uri': graphUri, 
+                            'insert': addedJSON, 
+                            'delete': '{}', 
+                            'delete_hashed': '{}'
+                        }, 	function (responseData, textStatus, XHR) {
+								alert("\""+currentValue+ "\" has been saved successfully \n\nwith the indentifier: "+graphUri+noid );
+							}, 'json');
+			jQuery('#' + 'resource-input-'+newId).css("background-image", "none");
+			jQuery('#' + 'resource-input-'+newId).val(graphUri+noid); 
+			jQuery('#' + 'resource-input-'+newId).attr("readonly", "readonly");
+			
+        });    
         // widget markup ready
         widgetInstance.ready();
 
