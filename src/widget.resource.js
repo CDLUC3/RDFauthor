@@ -135,10 +135,10 @@ RDFauthor.registerWidget({
         	var readonly = 'readonly';
         	var color = ' style="color: #707070;"'
         }          
-        /*if((uriLabel.match("Type"))) { 
+        if((uriLabel.match("Type"))) { 
 			var readonly = 'readonly';
 			msg = ' title="Please select a value by clicking the Add Value button"';
-		}*/
+		}
         var markup = '\
             <div class="container resource-value">\
                 <input ' + readonly + msg + color + ' type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \

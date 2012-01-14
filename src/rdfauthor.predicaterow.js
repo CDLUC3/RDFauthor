@@ -108,7 +108,15 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
     append(getChrome());
 
     jQuery('#' + this.cssID() + ' .actions .delete-button').live('click', function () {
-        var widgetID = $(this).closest('.widget').attr('id');
+		var widgetID = $(this).closest('.widget').attr('id');
+		var widget   = self.getWidgetForID(widgetID);
+        var statement = widget.statement;
+		var predicate = statement.predicateURI();
+		if ( predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" || predicate == "http://www.udfr.org/onto/udfrIdentifier" || predicate == "http://www.w3.org/2000/01/rdf-schema#label") {
+			alert ("This Statement cannot be deleted.");
+			return false;
+		}
+        
         self.removeWidgetForID(widgetID);
     });
 
@@ -207,27 +215,27 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
             $('#predvaldiv-' + currentID).css("background-image","url("+imgUrl+")");
            	$('.valueSelector').hide();
         	var query1 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
-\nPREFIX udfrs: <http://www.udfr.org/onto/>\
-\nSELECT DISTINCT ?valuelabel ?val\
-\nWHERE { { <'+currentPred+'> rdfs:range ?rangeclass .\
-\nOPTIONAL { ?val rdf:type ?rangeclass .\
-\n?val rdfs:label ?valuelabel . } }\
-\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
-\n?sub rdfs:subClassOf ?rangeclass .\
-\nOPTIONAL { ?val rdf:type ?sub .\
-\n?val rdfs:label ?valuelabel . } }\
-\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
-\n?sub rdfs:subClassOf ?rangeclass .\
-\n?s2 rdfs:subClassOf ?sub .\
-\nOPTIONAL { ?val rdf:type ?s2 .\
-\n?val rdfs:label ?valuelabel . } }\
-\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
-\n?sub rdfs:subClassOf ?rangeclass .\
-\n?s2 rdfs:subClassOf ?sub .\
-\n?s3 rdfs:subClassOf ?s2 .\
-\nOPTIONAL { ?val rdf:type ?s3 .\
-\n?val rdfs:label ?valuelabel . } } } ORDER BY ASC(?valuelabel)'
+				\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+				\nPREFIX udfrs: <http://www.udfr.org/onto/>\
+				\nSELECT DISTINCT ?valuelabel ?val\
+				\nWHERE { { <'+currentPred+'> rdfs:range ?rangeclass .\
+				\nOPTIONAL { ?val rdf:type ?rangeclass .\
+				\n?val rdfs:label ?valuelabel . } }\
+				\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+				\n?sub rdfs:subClassOf ?rangeclass .\
+				\nOPTIONAL { ?val rdf:type ?sub .\
+				\n?val rdfs:label ?valuelabel . } }\
+				\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+				\n?sub rdfs:subClassOf ?rangeclass .\
+				\n?s2 rdfs:subClassOf ?sub .\
+				\nOPTIONAL { ?val rdf:type ?s2 .\
+				\n?val rdfs:label ?valuelabel . } }\
+				\nUNION { <'+currentPred+'> rdfs:range ?rangeclass .\
+				\n?sub rdfs:subClassOf ?rangeclass .\
+				\n?s2 rdfs:subClassOf ?sub .\
+				\n?s3 rdfs:subClassOf ?s2 .\
+				\nOPTIONAL { ?val rdf:type ?s3 .\
+				\n?val rdfs:label ?valuelabel . } } } ORDER BY ASC(?valuelabel)'
 
         	
                RDFauthor.queryGraph(statement.graphURI(), query1, {
@@ -241,17 +249,19 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
                            var resources = {};
                            var color = "#F0F0F0";
                            var max = bindings.length; 
+						   var count = 0;
                            if (max > 0) {
                            	for (var i = 0; i < max; i++) {
                                	if(i%2) color = "#F8F8F8";
                                	else color = "#F0F0F0";
 								if (undefined !== bindings[i].valuelabel) {
+									count++;
 									var currentValueLabel = bindings[i].valuelabel.value;
 									var currentValueUri = bindings[i].val.value;
 									$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;'+currentValueLabel+'</li>');
 								}
 							}
-                           } else {
+                           } if (count<1) {
                            	$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; text-decoration:none;" onclick=document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;No Result Found..</li>');
                            }
                         }
@@ -269,7 +279,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
         		}
         }); 	
 		
-		// UDFR - Abhi - Save Value button click event
+		// UDFR - Abhi - Create new Value button click event
         jQuery('#savevalue-'+widgetID).click(function () {
 			var currentID = self.cssID();
 			var graphUri = statement.graphURI();
@@ -291,7 +301,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 				return false;
 			}
 			if((currentValue.match("http://www.udfr.org/udfr/u1")) || (currentValue.match("http://www.udfr.org/onto/"))) {
-				alert("\t Could not Create value. \nReason : Value already exist. ");
+				alert("\t Could not create new value. \n\tAs value already exists. ");
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false;
 			}
@@ -351,7 +361,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 							}, 'json');
 			jQuery('#' + 'resource-input-'+newId).css("background-image", "none");
 			jQuery('#' + 'resource-input-'+newId).val(graphUri+noid); 
-			//jQuery('#' + 'resource-input-'+newId).attr("readonly", "readonly");
+			jQuery('#' + 'resource-input-'+newId).attr("readonly", "readonly");
 			
         });    
         // widget markup ready

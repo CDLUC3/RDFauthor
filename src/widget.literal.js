@@ -188,6 +188,16 @@ RDFauthor.registerWidget({
     },
 
     markup: function () {
+		var predicateValue = this.statement.predicateURI();
+		var msg = '';
+		if (String(predicateValue).lastIndexOf('#') > -1) {
+            var uriLabel = String(predicateValue).substr(String(predicateValue).lastIndexOf('#') + 1);
+		} else {
+			var uriLabel = String(predicateValue).substr(String(predicateValue).lastIndexOf('/') + 1);
+		}
+		if((uriLabel.match("Date"))) { 
+			msg = ' title="Please enter date in this format : [YYYY [-MM [-DD]]]"';
+		}
         var areaConfig = {
             rows: (this.isLarge() ? '3' : '1'),
             buttonClass: /*(this.isLarge()) ? 'disclosure-button-horizontal' :*/ 'disclosure-button-vertical',
@@ -202,7 +212,7 @@ RDFauthor.registerWidget({
         var areaMarkup = '\
             <div class="container ' + areaConfig.containerClass + '" style="width:100%">\
                 <div class="notboolean" style="' + ( isBoolean ? 'display:none;' : 'display:block;' ) + '">\
-                <textarea rows="' + String(areaConfig.rows) + '" cols="20" id="literal-value-' +
+                <textarea '+msg+' rows="' + String(areaConfig.rows) + '" cols="20" id="literal-value-' +
                     this.ID + '">' + (this.statement.hasObject() ? this.statement.objectValue() : '') + '</textarea>\
                 </div>\
                 <div class="boolean" style="' + ( isBoolean ? 'display:block;' : 'display:none;' ) + '">\
@@ -248,8 +258,13 @@ RDFauthor.registerWidget({
     },
 
     submit: function () {
+		// UDFR - ABHI - Dont create an instance without a label.
+		if (this.statement.predicateURI() == "http://www.w3.org/2000/01/rdf-schema#label" && null === this.value()) {
+			alert ("Cannot save this instance without label. \n\nPlease add a label");
+			return false;
+		}
         if (this.shouldProcessSubmit()) {
-            // get databank
+			// get databank
             var databank = RDFauthor.databankForGraph(this.statement.graphURI());
 
             /*
@@ -303,7 +318,7 @@ RDFauthor.registerWidget({
         var t1 = !this.statement.hasObject();
         var t2 = null === this.value();
         var t3 = this.removeOnSubmit;
-
+		
         return (!(t1 && t2) || t3);
     },
 
