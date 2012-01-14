@@ -106,30 +106,42 @@ RDFauthor.registerWidget({
                   ? this.statement.objectLabel()
                   : (this.statement.hasObject() ? this.statement.objectValue() : '');
         
-        /* UDFR - Abhi - if predicate value is rdf:type
+        var graph = this.statement.graphURI();
+		var msg = '';
+		/* UDFR - Abhi - if predicate value is rdf:type
          * Then Do not display "Add Value" button
          * And Input box will be disabled
-         */
+        */ 
         var predicateValue = this.statement.predicateURI();
-		var buttonMarkup1 = '\
+		if (String(predicateValue).lastIndexOf('#') > -1) {
+            var uriLabel = String(predicateValue).substr(String(predicateValue).lastIndexOf('#') + 1);
+		} else {
+			var uriLabel = String(predicateValue).substr(String(predicateValue).lastIndexOf('/') + 1);
+		}
+		
+        if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ) {
+        	var buttonMarkup1 = '\
         		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Value</a>';
-		var graph = this.statement.graphURI();
-        if (graph != "http://localhost/OntoWiki/Config/" || graph != "http://www.udfr.org/profile/") {
-        	
-			var buttonMarkup2 = '\
-        		<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Save Value</a>';
-        	var readonly = '';
-        	var color = '';
+			if ( graph != "http://localhost/OntoWiki/Config/" || graph != "http://www.udfr.org/profile/") {
+				var buttonMarkup2 = '\
+					<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Create new Value</a>';
+				var readonly = '';
+				var color = '';
+			}
         }
         else {
+			var buttonMarkup1 = '';
 			var buttonMarkup2 = '';
         	var readonly = 'readonly';
         	var color = ' style="color: #707070;"'
         }          
-        
+        /*if((uriLabel.match("Type"))) { 
+			var readonly = 'readonly';
+			msg = ' title="Please select a value by clicking the Add Value button"';
+		}*/
         var markup = '\
             <div class="container resource-value">\
-                <input ' + readonly + color + ' type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \
+                <input ' + readonly + msg + color + ' type="text" id="resource-input-' + this.ID + '" class="text resource-edit-input" \
                        value="'+value+'"/>\
                        ' + buttonMarkup1 + buttonMarkup2 + '</div>';
 
