@@ -287,6 +287,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 			var baseUrl = String(RDFAUTHOR_BASE).substr(0, String(RDFAUTHOR_BASE).lastIndexOf('/') - 19);
 			var noidUrl = baseUrl + "noid/";
 			var updateURI = RDFauthor.updateURIForGraph(graphUri);
+			var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
 			var noid = "noid";
 			var rangeClass = "range";
 			var newId = widgetID-1;
@@ -300,7 +301,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false;
 			}
-			if((currentValue.match("http://www.udfr.org/udfr/u1")) || (currentValue.match("http://www.udfr.org/onto/"))) {
+			if((currentValue.match(regexp))) {
 				alert("\t Could not create new value. \n\tAs value already exists. ");
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false;
