@@ -122,7 +122,7 @@ RDFauthor.registerWidget({
         if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ) {
         	var buttonMarkup1 = '\
         		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Value</a>';
-			if ( graph != "http://localhost/OntoWiki/Config/" || graph != "http://www.udfr.org/profile/") {
+			if ( graph != "http://localhost/OntoWiki/Config/" && graph != "http://www.udfr.org/profile/") {
 				var buttonMarkup2 = '\
 					<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Create new Value</a>';
 				var readonly = '';
