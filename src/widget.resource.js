@@ -127,6 +127,8 @@ RDFauthor.registerWidget({
 					<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Create new Value</a>';
 				var readonly = '';
 				var color = '';
+			}  else {
+				var buttonMarkup2 = '';
 			}
         }
         else {
