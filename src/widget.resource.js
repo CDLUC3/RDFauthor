@@ -130,10 +130,10 @@ RDFauthor.registerWidget({
 		
         if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ) {
         	var buttonMarkup1 = '\
-        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Value</a>';
+        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="float:left;" >Select Predefined Value</a> <span style="float:left;">&nbsp&nbspOR&nbsp&nbsp</span>';
 			if ( graph != ontowikiModel && graph != profileModel) {
 				var buttonMarkup2 = '\
-					<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Create new Value</a>';
+					<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="float:left;" >Create new Value</a>';
 				var readonly = '';
 				var color = '';
 			}  else {
