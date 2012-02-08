@@ -312,8 +312,9 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 			var currentValue = jQuery('#' +'resource-input-'+newId).val();
 			//Check if new value is not NULL
 			if (currentValue == "") {
-				alert ("Please enter a value");
+				alert ("Please type a label on the form. \nThen click 'Create New Value'");
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
+				jQuery('#' + 'resource-input-'+newId).focus();
 				return false;
 			}
 			// Check if new value is not an URL

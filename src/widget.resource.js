@@ -149,6 +149,7 @@ RDFauthor.registerWidget({
         if((uriLabel.match("Type"))) { 
 			var readonly = 'readonly';
 			msg = ' title="Please select a value by clicking the Add Value button"';
+			buttonMarkup2 = '';
 		}
         var markup = '\
             <div class="container resource-value">\
