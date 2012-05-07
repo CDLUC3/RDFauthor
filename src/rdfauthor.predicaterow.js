@@ -1,3 +1,12 @@
+/**
+ * Copyright © 2012 The Regents of the University of California
+ *
+ * The Unified Digital Format Registry (UDFR) is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*
  * This file is part of the RDFauthor project.
  * http://code.google.com/p/rdfauthor
@@ -115,6 +124,14 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 		if ( predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" || predicate == "http://udfr.org/onto#udfrIdentifier" || predicate == "http://www.w3.org/2000/01/rdf-schema#label") {
 			alert ("This Statement cannot be deleted.");
 			return false;
+		if ( predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" || predicate == "http://www.udfr.org/onto/udfrIdentifier" || predicate == "http://www.w3.org/2000/01/rdf-schema#label") {
+			var answer = confirm ("Are you sure you want to delete the label? \nWithout a label, you may not be able to find this resource. \nTo delete, press \"OK\"")
+			if (answer) {
+				self.removeWidgetForID(widgetID);
+				return false;
+			} else {
+				return false;
+			}
 		}
         
         self.removeWidgetForID(widgetID);
@@ -247,18 +264,18 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
                        if (data && data['results'] && data['results']['bindings']) {
                            var bindings  = data['results']['bindings'];
                            var resources = {};
-                           var color = "#F0F0F0";
+                           var color = "#C8C8C8";
                            var max = bindings.length; 
 						   var count = 0;
                            if (max > 0) {
                            	for (var i = 0; i < max; i++) {
                                	if(i%2) color = "#F8F8F8";
-                               	else color = "#F0F0F0";
+                               	else color = "#C8C8C8";
 								if (undefined !== bindings[i].valuelabel) {
 									count++;
 									var currentValueLabel = bindings[i].valuelabel.value;
 									var currentValueUri = bindings[i].val.value;
-									$('#predvaldiv-' + currentID).append('<li style="cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>&nbsp;&nbsp;'+currentValueLabel+'</li>');
+									$('#predvaldiv-' + currentID).append('<li style="padding-left:10px; cursor:pointer; color:black; list-style:none; display:block; background-color:'+color+'; text-decoration:none;" onclick=document.getElementById("resource-input-'+(widgetID-1)+'").value="'+currentValueUri+'";document.getElementById("predvaldiv-'+currentID+'").style.display="none";document.getElementById("predvaldiv-'+currentID+'").style.cursor = "auto";>'+currentValueLabel+'</li>');
 								}
 							}
                            } if (count<1) {
@@ -287,6 +304,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 			var baseUrl = String(RDFAUTHOR_BASE).substr(0, String(RDFAUTHOR_BASE).lastIndexOf('/') - 19);
 			var noidUrl = baseUrl + "noid/";
 			var updateURI = RDFauthor.updateURIForGraph(graphUri);
+			var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
 			var noid = "noid";
 			var rangeClass = "range";
 			var newId = widgetID-1;
@@ -295,43 +313,44 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 			jQuery('#' + 'resource-input-'+newId).css("background-repeat", "no-repeat");
 			jQuery('#' + 'resource-input-'+newId).css("background-position", "right");
 			var currentValue = jQuery('#' +'resource-input-'+newId).val();
+			//Check if new value is not NULL
 			if (currentValue == "") {
-				alert ("Please enter a value");
+				alert ("Please type a label on the form. \nThen click 'Create New Value'");
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
+				jQuery('#' + 'resource-input-'+newId).focus();
 				return false;
 			}
-			if((currentValue.match("http://www.udfr.org/udfr/u1")) || (currentValue.match("http://www.udfr.org/onto/"))) {
+			// Check if new value is not an URL
+			if((currentValue.match(regexp))) {
 				alert("\t Could not create new value. \n\tAs value already exists. ");
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false;
 			}
-			
+			// get the range class of current predicate via AJAX
 			var query2 = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-                   \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
-        		\nSELECT  ?rangeclass\
-        		\nWHERE { <'+currentPred+'> rdfs:range ?rangeclass }';
-			// get the range class of property
+					\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\
+					\nSELECT  ?rangeclass\
+					\nWHERE { <'+currentPred+'> rdfs:range ?rangeclass }';
 			RDFauthor.queryForRangeClass(graphUri, query2, {
                	callbackSuccess: function (data) {
 					if (data && data['results'] && data['results']['bindings']) {
                         var bindings  = data['results']['bindings'];
 						rangeClass = bindings[0].rangeclass.value;
-						//alert(rangeClass);
 					}
 				} 
 			});
 			var rangeClassLabel = String(rangeClass).substr(String(rangeClass).lastIndexOf('/') + 1);
 			var checkRangeClass = String(rangeClassLabel).substr(0, 8);
-			if (checkRangeClass == "Abstract") {
-			
+			// Check if range class is not an Abstract class
+			if (checkRangeClass == "Abstract") {			
 				alert ("\tYou can not create an instance of its range class. \n Reason: Because its range class is an abstract class. ");
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false;
 			}
+			//Call noid method via AJAX according to range class, “u1f” for formats and “u1r” for rest
 			if ( rangeClass == "http://www.udfr.org/onto/FileFormat" || rangeClass == "http://www.udfr.org/onto/Encoding" || rangeClass == "http://www.udfr.org/onto/Compression" ) {
 				noidUrl = noidUrl + "u1fother";
 			} else noidUrl = noidUrl + "u1rother";
-			
 			// get noid identifier
 			jQuery.ajax({
 						timeout: 5000,
@@ -343,12 +362,13 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 								}
 			});
 			var noidCheck = String(noid).substr(0, 2);
+			// Check if noid populated correctly
 			if (noid == "noid" || noidCheck != "u1") { 
 				alert ("\t Could not save value. \nReason : Failed to get noid identifier"); 
 				jQuery('#' + 'resource-input-'+newId).css("background-image","none");
 				return false; 
 			}
-			
+			// 3 triples to save in database are:
 			var addedJSON = '{"'+graphUri+noid+'":{"http://www.w3.org/1999/02/22-rdf-syntax-ns#type":[{"type":"uri","value":"'+rangeClass+'"}],"http://www.w3.org/2000/01/rdf-schema#label":[{"type":"literal","value":"'+currentValue+'"}],"http://www.udfr.org/onto/udfrIdentifier":[{"type":"literal","value":"'+noid+'"}]}}';
 			// call update endpoint to save triples
 			$.post(updateURI, {

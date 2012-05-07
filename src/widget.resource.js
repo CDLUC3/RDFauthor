@@ -1,3 +1,12 @@
+/**
+ * Copyright © 2012 The Regents of the University of California
+ *
+ * The Unified Digital Format Registry (UDFR) is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*
  * This file is part of the RDFauthor project.
  * http://code.google.com/p/rdfauthor
@@ -121,12 +130,14 @@ RDFauthor.registerWidget({
 		
         if (predicateValue !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ) {
         	var buttonMarkup1 = '\
-        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="height:30px; width:100px;" >Add Value</a>';
-			if ( graph != "http://localhost/OntoWiki/Config/" || graph != "http://www.udfr.org/profile/") {
+        		<a alt="resource-input-' + this.ID + '" id="addvalue-'+widgetID+'" style="float:left;" >Select Predefined Value</a> ';
+			if ( graph != ontowikiModel && graph != profileModel) {
 				var buttonMarkup2 = '\
-					<a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="height:30px; width:100px;" >Create new Value</a>';
+					<span style="float:left;">&nbsp&nbsp or &nbsp&nbsp</span> <a alt="resource-input-' + this.ID + '" id="savevalue-'+widgetID+'" style="float:left;" >Create New Value</a>';
 				var readonly = '';
 				var color = '';
+			}  else {
+				var buttonMarkup2 = '';
 			}
         }
         else {
@@ -138,6 +149,7 @@ RDFauthor.registerWidget({
         if((uriLabel.match("Type"))) { 
 			var readonly = 'readonly';
 			msg = ' title="Please select a value by clicking the Add Value button"';
+			buttonMarkup2 = '';
 		}
         var markup = '\
             <div class="container resource-value">\
@@ -180,100 +192,6 @@ RDFauthor.registerWidget({
                     return false;
                 }
             }
-            
-            /*UDFR - Abhi -Check for the input value is already a instance of its range class or not
-             * If not then create an instance of its range class.
-             
-			var graph = this.statement.graphURI();
-			if (graph != 'http://localhost/OntoWiki/Config/') {
-            var currentPred = myself.statement.predicateURI();
-            var inputValue = this.value();
-            if (String(inputValue).lastIndexOf('#') > -1) {
-            	var valueLabel = String(inputValue).substr(String(inputValue).lastIndexOf('#') + 1);
-				var baseUri = String(inputValue).substr(0, String(inputValue).lastIndexOf('#') + 1);
-            } else {
-            	var valueLabel = String(inputValue).substr(String(inputValue).lastIndexOf('/') + 1);
-				var baseUri = String(inputValue).substr(0, String(inputValue).lastIndexOf('/') + 1);
-            }
-            
-            var prologue = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\
-                \nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>';
-            var query = prologue + '\nSELECT ?isMemberof ?rangeclass\
-            WHERE { <'+currentPred+'> rdfs:range ?rangeclass . \
-            OPTIONAL { <'+inputValue+'> rdf:type ?isMemberof }\
-            }';
-            
-            
-            
-            //UDFR - Abhi - AJAX call for Sparql endpoint
-            /*RDFauthor.queryForRangeClass(graph, query, {
-            	callbackSuccess: function (data) {
-            		if (data && data['results'] && data['results']['bindings']) {
-                        var bindings  = data['results']['bindings'];
-                        var keyCount = 0;
-                        var rangeclass = bindings[0].rangeclass.value;
-                       
-                        for(key in bindings[0])
-                        	{
-                        		keyCount = keyCount+1;
-                        	}
-                        //alert(keyCount);
-                        if (keyCount==1) {
-							/*jQuery.ajax({
-									timeout: 5000,
-									async: false,
-									dataType: 'html',
-									url: 'http://udfr-dev.cdlib.org:8089/noid/test',
-									success: function (data) {
-										//if (data) {
-													var noid = data.replace(/^\s+|\s+$/g, '');
-													//alert('<' + baseUri + noid + '>');
-							*//*
-							try {
-                            	var objectOptions1 = {};
-                            	objectOptions1.type='uri';
-                            	objectOptions1.value = '<' +rangeclass+ '>';
-                            	var createNewInstance1 = new Statement({
-                                    subject: '<' + graph +'noid/'+ valueLabel + '>', 
-                                    predicate: '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', 
-                                    object: objectOptions1
-                                }, {
-                                    hidden: hidden, 
-                                    ignored: ignored, 
-                                    required: required, 
-                                    protected: protected1, 
-                                    graph: graph
-                                });
-                            	
-                            	var options = {};
-                            	options.datatype = 'http://www.w3.org/2001/XMLSchema#string'; 
-                            	var objectSpecs = {};
-                            	objectSpecs.options = options;
-                            	objectSpecs.type = 'literal';
-                            	objectSpecs.value = valueLabel;
-                            	var createNewInstance2 = new Statement({
-                                    subject: '<' + graph +'noid/'+ valueLabel + '>', 
-                                    predicate: '<http://www.w3.org/2000/01/rdf-schema#label>', 
-                                    object: objectSpecs
-                                }, {
-                                	hidden: hidden, 
-                                    ignored: ignored, 
-                                    required: required, 
-                                    protected: protected1, 
-                                    graph: graph
-                                });
-                                databank.add(createNewInstance1.asRdfQueryTriple());
-                            	databank.add(createNewInstance2.asRdfQueryTriple());
-                            	
-                            } catch (e) {
-                                var msg = e.message ? e.message : e;
-                                alert('Could not save resource for the following reason: \n' + msg);
-                                return false;
-                            }
-						}
-					}
-		    	}
-            });*/
 		}
 		return true;
 },
