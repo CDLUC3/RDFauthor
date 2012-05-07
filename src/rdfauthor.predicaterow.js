@@ -112,7 +112,7 @@ function PredicateRow(subjectURI, predicateURI, title, container, id, allowOverr
 		var widget   = self.getWidgetForID(widgetID);
         var statement = widget.statement;
 		var predicate = statement.predicateURI();
-		if ( predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" || predicate == "http://www.udfr.org/onto/udfrIdentifier" || predicate == "http://www.w3.org/2000/01/rdf-schema#label") {
+		if ( predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" || predicate == "http://udfr.org/onto#udfrIdentifier" || predicate == "http://www.w3.org/2000/01/rdf-schema#label") {
 			alert ("This Statement cannot be deleted.");
 			return false;
 		}
