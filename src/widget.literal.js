@@ -207,12 +207,16 @@ RDFauthor.registerWidget({
         if (this.statement.objectValue() == 'true' || this.statement.objectValue() == 'false') {
             readonly = 'readonly="true"';
         }
+		var readonly1 = '';
+        if (String(predicateValue)== udfrIdentifier) {
+            readonly1 = ' readonly="true"';
+        }
 
         var isBoolean = this.statement.objectDatatype() == this.bool ? true : false;
         var areaMarkup = '\
             <div class="container ' + areaConfig.containerClass + '" style="width:100%">\
                 <div class="notboolean" style="' + ( isBoolean ? 'display:none;' : 'display:block;' ) + '">\
-                <textarea '+msg+' rows="' + String(areaConfig.rows) + '" cols="20" id="literal-value-' +
+                <textarea '+msg+uneditable+' rows="' + String(areaConfig.rows) + '" cols="20" id="literal-value-' +
                     this.ID + '">' + (this.statement.hasObject() ? this.statement.objectValue() : '') + '</textarea>\
                 </div>\
                 <div class="boolean" style="' + ( isBoolean ? 'display:block;' : 'display:none;' ) + '">\
